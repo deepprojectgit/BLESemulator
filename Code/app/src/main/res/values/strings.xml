@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">BLE Simulator</string>
+
+    <string name="permission_required">Permission Required</string>
+    <string name="permission_message">Bluetooth and location permission is required to BLE operation.</string>
+    <string name="btn_grant">Grant</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_go_to_next">Go to next</string>
+    <string name="menu_device">Devices</string>
+    <string name="menu_controller">Controller</string>
+    <string name="btn_send_temperature_event_device">Send Temperature</string>
+    <string name="btn_send_pressure_event_device">Send Pressure</string>
+    <string name="btn_send_pulse_oximetry_event_device">Send Pulse Oximetry</string>
+    <string name="btn_send_battery_status_event_device">Send Battery Status</string>
+    <string name="no_data_found">No Data Found</string>
+</resources>
