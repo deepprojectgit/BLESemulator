@@ -6,6 +6,7 @@ import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.viewbinding.ViewBinding
 import com.demo.myapplication.R
@@ -20,8 +21,7 @@ abstract class BaseActivity<VB : ViewBinding>(val bindingInflater: (LayoutInflat
         setContentView(binding.root)
         enableEdgeToEdge()
         initView()
-
-
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 onBackPress()

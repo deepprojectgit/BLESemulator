@@ -70,6 +70,7 @@ class BleServerManager(private val context: Context) {
     }
 
 
+
     @SuppressLint("MissingPermission")
     fun startGattServer() {
         gattServer = bluetoothManager.openGattServer(context, gattServerCallback)
@@ -96,19 +97,19 @@ class BleServerManager(private val context: Context) {
         job1 = scopeEventReceive.launch {
             GlobalEventBus.eventDevice.eventReceive.collect{
                 if(it.isSendPressure){
-                    sendPressure(5.6f, diastolic = 10.5f, meanArterial = 10.5f)
+                    sendPressure()
                 }
 
                 if(it.isSendTemperature){
-                    sendTemperature(valueCelsius= 21.0f)
+                    sendTemperature()
                 }
 
                 if(it.isSendBatteryStatus){
-                    sendBatteryStatus(5)
+                    sendBatteryStatus()
                 }
 
                 if(it.isSendPulseOximetry){
-                    sendPulseOximetry(90.6f,  100.5f,)
+                    sendPulseOximetry()
                 }
             }
         }
@@ -135,91 +136,38 @@ class BleServerManager(private val context: Context) {
     }
 
     @SuppressLint("MissingPermission")
-    fun sendTemperature(valueCelsius: Float) {
-
+    fun sendTemperature() {
         connectedDevice?.let { devices ->
-            val json = """
-            {
-                "type": "temperature",
-                "date": "${currentDate()}",
-                "time": "${currentTime()}"
-            }
-            """.trimIndent()
-            val jsonBytes = json.toByteArray(Charsets.UTF_8)
             devices.forEach {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false,jsonBytes)
-                }else {
-                    temperatureCharacteristic.value = jsonBytes
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false)
-                }
+                sendLargeJsonOverNotification("Temperature", it)
             }
 
         }
     }
 
     @SuppressLint("MissingPermission")
-    fun sendPressure(systolic: Float, diastolic: Float, meanArterial: Float) {
+    fun sendPressure() {
         connectedDevice?.let { devices ->
-            val json = """
-            {
-                "type": "BloodPressure",
-                "date": "${currentDate()}",
-                "time": "${currentTime()}"
-            }
-            """.trimIndent()
-            val jsonBytes = json.toByteArray(Charsets.UTF_8)
             devices.forEach {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false, jsonBytes)
-                } else {
-                    temperatureCharacteristic.value = jsonBytes
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false)
-                }
+                sendLargeJsonOverNotification("BloodPressure", it)
             }
         }
     }
 
     @SuppressLint("MissingPermission")
-    fun sendBatteryStatus(batteryLevel: Int) {
+    fun sendBatteryStatus() {
         connectedDevice?.let { devices ->
-            val json = """
-            {
-                "type": "batteryLevel",
-                "date": "${currentDate()}",
-                "time": "${currentTime()}"
-            }
-            """.trimIndent()
-            val jsonBytes = json.toByteArray(Charsets.UTF_8)
             devices.forEach {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false, jsonBytes)
-                } else {
-                    temperatureCharacteristic.value = jsonBytes
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false)
-                }
+                sendLargeJsonOverNotification("BatteryLevel", it)
             }
         }
     }
 
     @SuppressLint("MissingPermission")
-    fun sendPulseOximetry(spO2: Float, pulseRate: Float) {
+    fun sendPulseOximetry() {
         connectedDevice?.let { devices ->
-            val json = """
-            {
-                "type": "pulse_oximetry",
-                "date": "${currentDate()}",
-                "time": "${currentTime()}"
-            }
-            """.trimIndent()
-            val jsonBytes = json.toByteArray(Charsets.UTF_8)
             devices.forEach {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false, jsonBytes)
-                } else {
-                    temperatureCharacteristic.value = jsonBytes
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false)
-                }
+                sendLargeJsonOverNotification("pulse_oximetry", it)
             }
         }
     }
@@ -227,25 +175,8 @@ class BleServerManager(private val context: Context) {
     @SuppressLint("MissingPermission")
     fun sendHeartbeat() {
         connectedDevice?.let { devices ->
-            val json = """
-            {
-                "type": "heartbeat",
-                "date": "${currentDate()}",
-                "time": "${currentTime()}"
-            }
-            """.trimIndent()
-            val heartbeatMessage = json.toByteArray(Charsets.UTF_8)
             devices.forEach {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false,heartbeatMessage)
-                }else {
-                    temperatureCharacteristic.value = heartbeatMessage
-                    gattServer?.notifyCharacteristicChanged(
-                        it,
-                        temperatureCharacteristic,
-                        false
-                    )
-                }
+                sendLargeJsonOverNotification("Heartbeat", it)
             }
         }
     }
@@ -262,21 +193,8 @@ class BleServerManager(private val context: Context) {
     @SuppressLint("MissingPermission")
     fun notifyDisconnect(reason: String = "disconnect") {
         connectedDevice?.let { devices ->
-            val json = """
-            {
-                "type": "$reason",
-                "date": "${currentDate()}",
-                "time": "${currentTime()}"
-            }
-            """.trimIndent()
-            val disconnectMessage = json.toByteArray(Charsets.UTF_8)
             devices.forEach {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false,disconnectMessage)
-                }else {
-                    temperatureCharacteristic.value = disconnectMessage
-                    gattServer?.notifyCharacteristicChanged(it, temperatureCharacteristic, false)
-                }
+                sendLargeJsonOverNotification(reason, it)
             }
         }
     }
@@ -337,15 +255,15 @@ class BleServerManager(private val context: Context) {
         }
     }
 
-    fun currentDate():String{
-        val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-        val currentDate = sdf.format(Date())
-        return currentDate
+    @SuppressLint("MissingPermission")
+    fun sendLargeJsonOverNotification(type: String, device: BluetoothDevice) {
+        val jsonBytes = type.toByteArray(Charsets.UTF_8)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            gattServer?.notifyCharacteristicChanged(device, temperatureCharacteristic, false,jsonBytes)
+        }else {
+            temperatureCharacteristic.value = jsonBytes
+            gattServer?.notifyCharacteristicChanged(device, temperatureCharacteristic, false)
+        }
     }
 
-    fun currentTime():String{
-        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        val currentDate = sdf.format(Date())
-        return currentDate
-    }
 }
